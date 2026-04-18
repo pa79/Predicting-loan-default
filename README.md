@@ -1,64 +1,96 @@
-# Predicting-loan-default
+# Loan Default Prediction from Relational Banking Data
 
-## 📌 Overview
+Production-style Python repository that turns messy multi-table banking data into borrower-level default features and trains a prediction pipeline for credit screening.
 
-The objective of this project is to develop a supervised machine learning model to **predict loan default** based on a variety of observable and legally usable client and transaction characteristics. This is a critical task in the banking sector, which seeks to minimise risk and ensure financial stability by accurately forecasting which loans are most likely to default.
+The project is positioned around the real engineering problem: default models are rarely built from a single clean table. They are built from linked account, client, transaction, and loan data that must be standardized and aggregated first.
 
-We utilise the **Berka Dataset**, a comprehensive, anonymised financial dataset from a Czech bank, which includes information on clients, accounts, transactions, and loans.
+## Problem
 
----
+Banks and fintech lenders need to identify higher-risk borrowers before credit losses occur. In practice, that requires joining fragmented operational data, engineering stable borrower-level features, and producing a reusable training dataset for model development.
 
-## 📂 Data Description
+This repository focuses on that workflow.
 
-The dataset comprises multiple relational files capturing different facets of banking activity:
+## Why This Matters
 
-| File Name         | Observations | Description |
-|------------------|--------------|-------------|
-| `account.asc`     | 4,500        | Static characteristics of bank accounts |
-| `client.asc`      | 5,369        | Demographic characteristics of clients |
-| `disp.asc`        | 5,369        | Mapping between clients and accounts |
-| `order.asc`       | 6,471        | Information on credit card payment orders |
-| `transaction.asc` | 1,056,320    | Detailed account transactions |
-| `loan.asc`        | 682          | Records of loans granted to accounts |
-| `card.asc`        | 892          | Details of credit cards issued |
-| `district.asc`    | 77           | Demographic statistics of districts |
+The strongest signal in this project is not just model fitting. It is the ability to work with messy relational data and convert millions of transaction-level records into analysis-ready borrower features.
 
-⚠️ **Note:** Given the richness of the dataset, we will selectively use only the most relevant tables for this prediction task.
+## Data Approach
 
----
+- `demo` mode generates Berka-style relational banking tables:
+  - clients
+  - accounts
+  - transactions
+  - loans
+  - district attributes
+- the pipeline aggregates transaction and balance history to the loan level
+- the final modeling table is stored for downstream model development
 
-## 🔄 Workflow Summary
+## Pipeline
 
-1. **Load and Explore the Data**  
-   Load selected datasets and perform initial exploratory analysis to understand distributions, missing data, and relationships.
+```text
+synthetic relational tables
+          |
+   standardize and join keys
+          |
+ account and transaction aggregation
+          |
+ borrower-level feature table
+          |
+ model training and evaluation
+          |
+ exported scored sample and metrics
+```
 
-2. **Preprocessing & Feature Engineering**  
-   Merge datasets (e.g., `client`, `account`, `loan`, `transaction`), handle missing values, and create features relevant to loan risk (e.g., average balance, transaction count, district unemployment rate).
+## Repository Layout
 
-3. **Model Training**  
-   Apply classification models such as Logistic Regression, Random Forest, and Gradient Boosting. Tune hyperparameters using cross-validation.
+```text
+Predicting-loan-default/
+├── .github/workflows/ci.yml
+├── data/{raw,processed,gold}/
+├── examples/
+├── logs/
+├── notebooks/
+├── src/loan_default_prediction/
+├── tests/
+├── Makefile
+├── pyproject.toml
+├── requirements.txt
+└── README.md
+```
 
-4. **Evaluation**  
-   Use accuracy, precision, recall, F1-score, and ROC-AUC to evaluate model performance on a hold-out validation set.
+## Modeling Approach
 
----
+- borrower feature construction from relational source tables
+- logistic regression and random forest comparison
+- holdout evaluation with AUC, precision, recall, and default-rate summaries
+- emphasis on usable features and reproducibility rather than notebook-only exploration
 
-## 🧠 Model Objective
+## Outputs
 
-**Target Variable:** `loan default (yes/no)`  
-**Goal:** Predict whether a loan will default based on financial and demographic characteristics prior to or at loan issuance.
+The demo pipeline writes:
 
----
+- `examples/model_summary.json`
+- `examples/feature_table_sample.csv`
+- `examples/scored_loans_sample.csv`
 
-## 🛠️ Tools & Libraries
+## Use Cases
 
-- Python 3.x
-- pandas, numpy
-- matplotlib, seaborn
-- scikit-learn
-- xgboost (optional)
-- Jupyter Notebook
+- consumer credit screening
+- borrower risk segmentation
+- feature-store style preparation for lending models
+- data engineering demonstration on multi-table financial data
 
----
+## Quick Start
 
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt -e .
+pytest
+python -m loan_default_prediction.cli run --mode demo
+```
+
+## Resume-Style Summary
+
+Built a Python credit risk pipeline that aggregates relational banking tables into borrower-level features and trains default prediction models for credit screening and portfolio analytics.
 
